@@ -7,12 +7,17 @@
 </head>
 
 <body>
-    <h2>Hello OpenCV.js</h2>
+    <h2>ascii image generator</h2>
     <p id="status">OpenCV.js is loading...</p>
     <div>
         <div class="inputoutput">
             <img id="imageSrc" alt="No Image" />
-            <div class="caption">imageSrc <input type="file" id="fileInput" name="file" /></div>
+            <div>
+                <label>imageSrc <input type="file" id="fileInput" name="file" /></label>
+            </div>
+            <div>
+                <label>max char count<input type="number" value="2000" id="maxCnt"></label>
+            </div>
         </div>
         <div class="inputoutput">
             <pre id="outPut"></pre>
@@ -22,11 +27,16 @@
         const imgDom = document.getElementById('imageSrc');
         const inputDom = document.getElementById('fileInput');
         const outPutDom = document.getElementById('outPut');
+        const maxCntDom = document.getElementById('maxCnt');
 
         const grayText = ['⠀','⠄','⠆','⠖','⠶','⡶','⣩','⣪','⣫','⣾','⣿'];
 
-        function widthInPixel(a,d,pixel = 2000){
-            return parseInt((-1+Math.sqrt(1+((pixel+1)*4*a/d)))/2);
+        function sizeInPixel(a,d,pixel = 2000){
+            a*=1.7;
+            const tempx = (-1+Math.sqrt(1+((pixel+1)*4*a/d)))/2;
+            const tempy = pixel / (tempx + 1);
+            console.log(tempx, tempy)
+            return [parseInt(tempx), parseInt(tempy)];
         }
 
         inputDom.addEventListener('change', (e) => {
@@ -37,15 +47,20 @@
             outPutDom.innerHTML = image2str(imgDom);
         };
 
+        maxCntDom.onchange = () => {
+            if(imgDom.src !== ''){
+                outPutDom.innerHTML = image2str(imgDom);
+            }
+        }
+
         function image2str(imgElement) {
             let src = cv.imread(imgElement);
 
-            const pixel = 2000;
+            const pixel = parseInt(maxCntDom.value);
 
-            const col = widthInPixel(src.matSize[1], src.matSize[0], pixel);
-            const row = parseInt(pixel / col);
+            const [col, row] = sizeInPixel(src.matSize[1], src.matSize[0], pixel);
 
-            // console.log(src.matSize);
+            console.log(col, row);
 
             let dst = new cv.Mat();
             let dsize = new cv.Size(col, row);
