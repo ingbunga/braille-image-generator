@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Hello OpenCV.js</title>
+</head>
+
+<body>
+    <h2>Hello OpenCV.js</h2>
+    <p id="status">OpenCV.js is loading...</p>
+    <div>
+        <div class="inputoutput">
+            <img id="imageSrc" alt="No Image" />
+            <div class="caption">imageSrc <input type="file" id="fileInput" name="file" /></div>
+        </div>
+        <div class="inputoutput">
+            <pre id="outPut"></pre>
+        </div>
+    </div>
+    <script type="text/javascript">
+        const imgDom = document.getElementById('imageSrc');
+        const inputDom = document.getElementById('fileInput');
+        const outPutDom = document.getElementById('outPut');
+
+        const grayText = ['⠀','⠄','⠆','⠖','⠶','⡶','⣩','⣪','⣫','⣾','⣿'];
+
+        function widthInPixel(a,d,pixel = 2000){
+            return parseInt((-1+Math.sqrt(1+((pixel+1)*4*a/d)))/2);
+        }
+
+        inputDom.addEventListener('change', (e) => {
+            imgDom.src = URL.createObjectURL(e.target.files[0]);
+        }, false);
+
+        imgDom.onload = () => {
+            outPutDom.innerHTML = image2str(imgDom);
+        };
+
+        function image2str(imgElement) {
+            let src = cv.imread(imgElement);
+
+            const pixel = 2000;
+
+            const col = widthInPixel(src.matSize[1], src.matSize[0], pixel);
+            const row = parseInt(pixel / col);
+
+            // console.log(src.matSize);
+
+            let dst = new cv.Mat();
+            let dsize = new cv.Size(col, row);
+
+            cv.resize(src, dst, dsize, 0, 0, cv.INTER_AREA);
+            cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY, 0);
+            let grid = [];
+            
+            if (src.isContinuous()) {
+                for(let r = 0; r < row; r++){
+                    let temp = ''
+                    for(let c = 0; c < col; c++){
+                        let R = dst.ucharPtr(r, c);
+                        temp += grayText[parseInt(R[0] / 25)];
+                    }
+                    grid.push(temp)
+                }
+            }
+            return grid.join('\n')
+
+            src.delete();
+            dst.delete();
+        };
+
+        function onOpenCvReady() {
+            document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
+        }
+    </script>
+    <script async src="https://docs.opencv.org/master/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+</body>
+
+</html>
