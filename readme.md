@@ -1,4 +1,4 @@
-# ascii image generator
+# braille image generator
 
 demo
 
